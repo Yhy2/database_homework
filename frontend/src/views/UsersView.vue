@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 
+import PageHero from "../components/PageHero.vue";
 import ResultTable from "../components/ResultTable.vue";
 import { listUsers } from "../api/users";
 import type { TableColumn, User } from "../types";
@@ -15,6 +16,9 @@ const columns: TableColumn[] = [
   { key: "user_name", label: "用户名", minWidth: 180 },
   { key: "phone", label: "手机号", minWidth: 180 },
 ];
+
+const userCount = computed(() => users.value.length);
+const phoneCoverage = computed(() => users.value.filter((user) => user.phone).length);
 
 async function loadUsers() {
   loading.value = true;
@@ -31,21 +35,37 @@ onMounted(loadUsers);
 </script>
 
 <template>
-  <section class="page-section">
-    <header class="section-header">
-      <div>
-        <p class="section-kicker">基础数据</p>
-        <h1>用户列表</h1>
-        <p class="section-copy">
-          所有用户数据都直接来自数据库中的 <code>user</code> 表，用于演示外键与业务关联。
-        </p>
-      </div>
+  <section class="page-section" v-loading="loading">
+    <PageHero
+      eyebrow="Master Data"
+      title="用户主数据与业务关联底座"
+    >
+      <template #actions>
+        <el-button plain @click="loadUsers">刷新用户数据</el-button>
+      </template>
 
-      <el-button plain @click="loadUsers">刷新数据</el-button>
-    </header>
+      <template #aside>
+        <div class="hero-insight hero-insight--dark">
+          <p class="hero-insight__eyebrow">User Snapshot</p>
+          <strong class="hero-insight__value">{{ userCount }} 位平台用户</strong>
+
+          <div class="hero-mini-grid">
+            <div class="hero-mini-card">
+              <span>用户总数</span>
+              <strong>{{ userCount }}</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>手机号完整</span>
+              <strong>{{ phoneCoverage }}</strong>
+            </div>
+          </div>
+        </div>
+      </template>
+    </PageHero>
 
     <ResultTable
       title="平台用户"
+      eyebrow="User Table"
       :columns="columns"
       :rows="users"
       :loading="loading"

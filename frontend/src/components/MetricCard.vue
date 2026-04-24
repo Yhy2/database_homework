@@ -3,11 +3,9 @@ withDefaults(
   defineProps<{
     title: string;
     value: string | number;
-    description?: string;
     tone?: "sun" | "sea" | "ink";
   }>(),
   {
-    description: "",
     tone: "sun",
   },
 );
@@ -15,10 +13,10 @@ withDefaults(
 
 <template>
   <article class="metric-card" :data-tone="tone">
-    <p class="metric-card__title">{{ title }}</p>
-    <strong class="metric-card__value">{{ value }}</strong>
-    <p v-if="description" class="metric-card__description">
-      {{ description }}
-    </p>
+    <div class="metric-card__rail" />
+    <div class="metric-card__content">
+      <p class="metric-card__title">{{ title }}</p>
+      <strong class="metric-card__value">{{ value }}</strong>
+    </div>
   </article>
 </template>

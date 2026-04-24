@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 
 import MetricCard from "../components/MetricCard.vue";
+import PageHero from "../components/PageHero.vue";
 import ResultTable from "../components/ResultTable.vue";
 import {
   getAggregateReports,
@@ -144,6 +145,76 @@ const unsoldViewRows = computed(() =>
   })),
 );
 
+const basicSections = computed(() => [
+  {
+    title: "未售商品",
+    columns: itemColumns,
+    rows: unsoldRows.value,
+  },
+  {
+    title: "价格大于 30 的商品",
+    columns: itemColumns,
+    rows: priceAbove30Rows.value,
+  },
+  {
+    title: "生活用品类商品",
+    columns: itemColumns,
+    rows: dailyGoodsRows.value,
+  },
+  {
+    title: "u001 发布的商品",
+    columns: itemColumns,
+    rows: sellerRows.value,
+  },
+]);
+
+const joinSections = computed(() => [
+  {
+    title: "已售商品及买家姓名",
+    columns: soldItemColumns,
+    rows: soldItemsWithBuyersRows.value,
+  },
+  {
+    title: "订单商品 + 买家 + 日期",
+    columns: orderJoinColumns,
+    rows: orderJoinRows.value,
+  },
+  {
+    title: "u001 卖出的商品状态",
+    columns: sellerStatusColumns,
+    rows: sellerStatusRows.value,
+  },
+]);
+
+const aggregateSections = computed(() => [
+  {
+    title: "每类商品数量",
+    columns: categoryCountColumns,
+    rows: categoryCountRows.value,
+  },
+]);
+
+const viewSections = computed(() => [
+  {
+    title: "已售商品视图（sold_item_view）",
+    columns: soldViewColumns,
+    rows: soldViewRows.value,
+  },
+  {
+    title: "未售商品视图（unsold_item_view）",
+    columns: unsoldViewColumns,
+    rows: unsoldViewRows.value,
+  },
+]);
+
+const reportModuleCount = computed(
+  () =>
+    basicSections.value.length +
+    joinSections.value.length +
+    aggregateSections.value.length +
+    viewSections.value.length,
+);
+
 async function loadReports() {
   loading.value = true;
   try {
@@ -171,83 +242,147 @@ onMounted(loadReports);
 </script>
 
 <template>
-  <section class="page-section">
-    <header class="section-header">
-      <div>
-        <p class="section-kicker">数据库查询展示</p>
-        <h1>基本查询、连接查询、聚合统计与视图</h1>
-        <p class="section-copy">
-          每个表格都来自后端原生 SQL 查询或数据库视图，可直接作为作业截图与结果证明。
-        </p>
-      </div>
+  <section class="page-section" v-loading="loading">
+    <PageHero
+      eyebrow="Data Insights"
+      title="查询统计与数据库洞察中心"
+    >
+      <template #actions>
+        <el-button plain @click="loadReports">刷新查询结果</el-button>
+      </template>
 
-      <el-button plain @click="loadReports">刷新结果</el-button>
-    </header>
+      <template #aside>
+        <div class="hero-insight hero-insight--dark">
+          <p class="hero-insight__eyebrow">Insight Snapshot</p>
+          <strong class="hero-insight__value">{{ reportModuleCount }} 个结果模块</strong>
 
-    <div class="metric-grid" v-loading="loading">
+          <div class="hero-mini-grid">
+            <div class="hero-mini-card">
+              <span>基础查询</span>
+              <strong>{{ basicSections.length }}</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>连接查询</span>
+              <strong>{{ joinSections.length }}</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>聚合统计</span>
+              <strong>{{ aggregateSections.length }}</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>数据库视图</span>
+              <strong>{{ viewSections.length }}</strong>
+            </div>
+          </div>
+        </div>
+      </template>
+    </PageHero>
+
+    <div class="metric-grid">
       <MetricCard
         title="商品总数"
         :value="aggregateReports?.total_items ?? 0"
-        description="聚合查询结果"
         tone="sun"
       />
       <MetricCard
         title="平均价格"
         :value="aggregateReports ? `¥${aggregateReports.average_price.toFixed(2)}` : '¥0.00'"
-        description="所有商品平均价格"
         tone="sea"
       />
       <MetricCard
         title="发布最多的用户"
         :value="aggregateReports?.top_seller?.user_name ?? '-'"
-        :description="aggregateReports ? `${aggregateReports.top_seller.item_count} 件商品` : ''"
         tone="ink"
       />
-    </div>
-
-    <div class="stats-grid">
-      <ResultTable title="未售商品" :columns="itemColumns" :rows="unsoldRows" :loading="loading" />
-      <ResultTable title="价格大于 30 的商品" :columns="itemColumns" :rows="priceAbove30Rows" :loading="loading" />
-      <ResultTable title="生活用品类商品" :columns="itemColumns" :rows="dailyGoodsRows" :loading="loading" />
-      <ResultTable title="u001 发布的商品" :columns="itemColumns" :rows="sellerRows" :loading="loading" />
-
-      <ResultTable
-        title="已售商品及买家姓名"
-        :columns="soldItemColumns"
-        :rows="soldItemsWithBuyersRows"
-        :loading="loading"
-      />
-      <ResultTable
-        title="订单商品 + 买家 + 日期"
-        :columns="orderJoinColumns"
-        :rows="orderJoinRows"
-        :loading="loading"
-      />
-      <ResultTable
-        title="u001 卖出的商品状态"
-        :columns="sellerStatusColumns"
-        :rows="sellerStatusRows"
-        :loading="loading"
-      />
-      <ResultTable
-        title="每类商品数量"
-        :columns="categoryCountColumns"
-        :rows="categoryCountRows"
-        :loading="loading"
-      />
-
-      <ResultTable
-        title="已售商品视图（sold_item_view）"
-        :columns="soldViewColumns"
-        :rows="soldViewRows"
-        :loading="loading"
-      />
-      <ResultTable
-        title="未售商品视图（unsold_item_view）"
-        :columns="unsoldViewColumns"
-        :rows="unsoldViewRows"
-        :loading="loading"
+      <MetricCard
+        title="已售视图结果"
+        :value="soldViewRows.length"
+        tone="sea"
       />
     </div>
+
+    <section class="content-block">
+      <header class="content-block__header">
+        <div>
+          <p class="section-kicker">Basic Queries</p>
+          <h2>基础查询结果</h2>
+        </div>
+      </header>
+
+      <div class="stats-grid">
+        <ResultTable
+          v-for="section in basicSections"
+          :key="section.title"
+          :title="section.title"
+          eyebrow="Basic Query"
+          :columns="section.columns"
+          :rows="section.rows"
+          :loading="loading"
+        />
+      </div>
+    </section>
+
+    <section class="content-block">
+      <header class="content-block__header">
+        <div>
+          <p class="section-kicker">Join Reports</p>
+          <h2>连接查询结果</h2>
+        </div>
+      </header>
+
+      <div class="stats-grid">
+        <ResultTable
+          v-for="section in joinSections"
+          :key="section.title"
+          :title="section.title"
+          eyebrow="Join Query"
+          :columns="section.columns"
+          :rows="section.rows"
+          :loading="loading"
+        />
+      </div>
+    </section>
+
+    <section class="content-block">
+      <header class="content-block__header">
+        <div>
+          <p class="section-kicker">Aggregate Reports</p>
+          <h2>聚合统计结果</h2>
+        </div>
+      </header>
+
+      <div class="stats-grid">
+        <ResultTable
+          v-for="section in aggregateSections"
+          :key="section.title"
+          :title="section.title"
+          eyebrow="Aggregate Query"
+          :columns="section.columns"
+          :rows="section.rows"
+          :loading="loading"
+        />
+      </div>
+    </section>
+
+    <section class="content-block">
+      <header class="content-block__header">
+        <div>
+          <p class="section-kicker">Database Views</p>
+          <h2>数据库视图结果</h2>
+        </div>
+      </header>
+
+      <div class="stats-grid">
+        <ResultTable
+          v-for="section in viewSections"
+          :key="section.title"
+          :title="section.title"
+          eyebrow="Database View"
+          :columns="section.columns"
+          :rows="section.rows"
+          :loading="loading"
+        />
+      </div>
+    </section>
   </section>
 </template>

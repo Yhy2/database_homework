@@ -24,30 +24,37 @@ const activePath = computed(() => {
 function openHome() {
   router.push("/");
 }
+
+function openPage(path: string) {
+  router.push(path);
+}
 </script>
 
 <template>
   <div class="app-shell">
-    <header class="topbar">
-      <button class="brand-button" type="button" @click="openHome">
-        <span class="brand-eyebrow">Database Homework</span>
-        <span class="brand-title">Campus Exchange Studio</span>
-      </button>
+    <div class="app-shell__backdrop" />
 
-      <el-menu
-        class="nav-menu"
-        mode="horizontal"
-        router
-        :default-active="activePath"
-      >
-        <el-menu-item
-          v-for="item in navItems"
-          :key="item.path"
-          :index="item.path"
-        >
-          {{ item.label }}
-        </el-menu-item>
-      </el-menu>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <button class="brand-mark" type="button" @click="openHome">
+          <span class="brand-mark__eyebrow">Campus Exchange Platform</span>
+          <span class="brand-mark__title">校园二手交易平台</span>
+          <span class="brand-mark__subtitle">Database System Showcase</span>
+        </button>
+
+        <nav class="site-nav" aria-label="主导航">
+          <button
+            v-for="item in navItems"
+            :key="item.path"
+            class="nav-item"
+            :class="{ 'is-active': activePath === item.path }"
+            type="button"
+            @click="openPage(item.path)"
+          >
+            {{ item.label }}
+          </button>
+        </nav>
+      </div>
     </header>
 
     <main class="page-frame">

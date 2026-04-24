@@ -4,6 +4,7 @@ import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 
 import MetricCard from "../components/MetricCard.vue";
+import PageHero from "../components/PageHero.vue";
 import { listItems } from "../api/items";
 import { listOrders } from "../api/orders";
 import { getAggregateReports } from "../api/reports";
@@ -23,9 +24,21 @@ const averagePrice = ref("¥0.00");
 const topSeller = ref("-");
 
 const shortcuts = [
-  { title: "商品管理", description: "新增商品、修改价格、删除未售商品", path: "/items" },
-  { title: "数据查询", description: "查看连接查询、聚合结果和数据库视图", path: "/stats" },
-  { title: "交易演示", description: "现场演示事务购买与重复购买限制", path: "/purchase" },
+  {
+    title: "商品管理",
+    path: "/items",
+    eyebrow: "Operations",
+  },
+  {
+    title: "查询统计",
+    path: "/stats",
+    eyebrow: "Insights",
+  },
+  {
+    title: "事务购买演示",
+    path: "/purchase",
+    eyebrow: "Transaction",
+  },
 ];
 
 async function loadDashboard() {
@@ -62,41 +75,67 @@ onMounted(loadDashboard);
 
 <template>
   <section class="page-section" v-loading="loading">
-    <div class="hero-card">
-      <div>
-        <p class="section-kicker">校园二手交易平台</p>
-        <h1>把数据库作业的每一条 SQL，都变成可见、可操作的网页流程。</h1>
-        <p class="section-copy">
-          本站围绕真实数据库数据展示、CRUD、连接查询、聚合统计、视图和事务购买来组织页面，
-          方便你直接录屏和截图完成作业交付。
-        </p>
-      </div>
+    <PageHero
+      eyebrow="Campus Exchange Platform"
+      title="数据库作业，也可以像企业官网一样呈现"
+    >
+      <template #actions>
+        <el-button type="primary" @click="openPage('/stats')">查看系统能力</el-button>
+        <el-button plain @click="openPage('/items')">进入商品管理</el-button>
+      </template>
 
-      <div class="hero-status">
-        <span>系统状态</span>
-        <strong>{{ healthLabel }}</strong>
-      </div>
-    </div>
+      <template #aside>
+        <div class="hero-insight hero-insight--dark">
+          <p class="hero-insight__eyebrow">运行状态</p>
+          <strong class="hero-insight__value">{{ healthLabel }}</strong>
+          <div class="hero-mini-grid">
+            <div class="hero-mini-card">
+              <span>用户</span>
+              <strong>{{ userCount }}</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>商品</span>
+              <strong>{{ itemCount }}</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>订单</span>
+              <strong>{{ orderCount }}</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>在售</span>
+              <strong>{{ unsoldCount }}</strong>
+            </div>
+          </div>
+        </div>
+      </template>
+    </PageHero>
 
     <div class="metric-grid">
-      <MetricCard title="用户总数" :value="userCount" description="题目初始用户已导入" tone="sun" />
-      <MetricCard title="商品总数" :value="itemCount" description="包含 1 条自定义商品数据" tone="sea" />
-      <MetricCard title="订单总数" :value="orderCount" description="展示历史成交与新增订单" tone="ink" />
-      <MetricCard title="在售商品" :value="unsoldCount" description="可直接用于购买演示" tone="sun" />
-      <MetricCard title="平均价格" :value="averagePrice" description="数据库聚合统计结果" tone="sea" />
-      <MetricCard title="最多发布者" :value="topSeller" description="按商品数量自动计算" tone="ink" />
+      <MetricCard title="用户总数" :value="userCount" tone="sun" />
+      <MetricCard title="商品总数" :value="itemCount" tone="sea" />
+      <MetricCard title="订单总数" :value="orderCount" tone="ink" />
+      <MetricCard title="在售商品" :value="unsoldCount" tone="sun" />
+      <MetricCard title="平均价格" :value="averagePrice" tone="sea" />
+      <MetricCard title="最多发布者" :value="topSeller" tone="ink" />
     </div>
 
-    <section class="shortcut-grid">
-      <article v-for="card in shortcuts" :key="card.path" class="shortcut-card">
-        <div>
-          <h2>{{ card.title }}</h2>
-          <p>{{ card.description }}</p>
-        </div>
-        <el-button type="primary" plain @click="openPage(card.path)">
-          进入页面
-        </el-button>
-      </article>
+    <section class="content-block">
+      <header class="content-block__header">
+        <p class="section-kicker">Entry Modules</p>
+        <h2>核心业务入口</h2>
+      </header>
+
+      <div class="shortcut-grid">
+        <article v-for="card in shortcuts" :key="card.path" class="shortcut-card">
+          <div class="shortcut-card__copy">
+            <p class="shortcut-card__eyebrow">{{ card.eyebrow }}</p>
+            <h3>{{ card.title }}</h3>
+          </div>
+          <el-button type="primary" plain @click="openPage(card.path)">
+            进入页面
+          </el-button>
+        </article>
+      </div>
     </section>
   </section>
 </template>

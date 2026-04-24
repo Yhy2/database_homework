@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "test": "vitest"
   },
   "dependencies": {
     "axios": "^1.8.4",
@@ -15,10 +16,13 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
     "@types/node": "^22.15.0",
     "@vitejs/plugin-vue": "^5.2.4",
+    "jsdom": "^26.1.0",
     "typescript": "^5.8.3",
     "vite": "^5.4.19",
+    "vitest": "^3.1.2",
     "vue-tsc": "^2.2.10"
   }
 }

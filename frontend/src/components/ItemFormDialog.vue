@@ -5,7 +5,7 @@ import type { FormInstance, FormRules } from "element-plus";
 
 import { createItem } from "../api/items";
 import type { CreateItemPayload, User } from "../types";
-import { getErrorMessage } from "../utils/display";
+import { formatCategory, getErrorMessage } from "../utils/display";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -91,7 +91,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <el-dialog v-model="visible" title="新增商品" width="520px">
+  <el-dialog v-model="visible" title="新增商品" width="560px">
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <el-form-item label="商品编号" prop="item_id">
         <el-input v-model="form.item_id" placeholder="例如 i101" />
@@ -108,7 +108,7 @@ async function handleSubmit() {
               <el-option
                 v-for="option in categoryOptions"
                 :key="option"
-                :label="option"
+                :label="formatCategory(option)"
                 :value="option"
               />
             </el-select>
@@ -142,7 +142,7 @@ async function handleSubmit() {
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" :loading="loading" @click="handleSubmit">
-        提交
+        创建商品
       </el-button>
     </template>
   </el-dialog>

@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 import ItemFormDialog from "../components/ItemFormDialog.vue";
+import PageHero from "../components/PageHero.vue";
 import { deleteItem, listItems, updateItemPrice } from "../api/items";
 import { listUsers } from "../api/users";
 import type { Item, User } from "../types";
@@ -28,6 +29,11 @@ const priceForm = reactive({
 const sortedItems = computed(() =>
   [...items.value].sort((left, right) => left.item_id.localeCompare(right.item_id)),
 );
+
+const itemCount = computed(() => items.value.length);
+const unsoldCount = computed(() => items.value.filter((item) => item.status === 0).length);
+const soldCount = computed(() => items.value.filter((item) => item.status === 1).length);
+const sellerCount = computed(() => new Set(items.value.map((item) => item.seller_id)).size);
 
 async function loadPageData() {
   loading.value = true;
@@ -93,23 +99,51 @@ onMounted(loadPageData);
 </script>
 
 <template>
-  <section class="page-section">
-    <header class="section-header">
-      <div>
-        <p class="section-kicker">数据操作</p>
-        <h1>商品列表与 CRUD</h1>
-        <p class="section-copy">
-          这里展示数据库中的真实商品数据，并支持新增商品、修改未售商品价格、删除未售商品。
-        </p>
-      </div>
-
-      <div class="action-row">
-        <el-button plain @click="loadPageData">刷新数据</el-button>
+  <section class="page-section" v-loading="loading">
+    <PageHero
+      eyebrow="Operations Control"
+      title="商品台账与供给管理"
+    >
+      <template #actions>
+        <el-button plain @click="loadPageData">刷新台账</el-button>
         <el-button type="primary" @click="dialogVisible = true">新增商品</el-button>
-      </div>
-    </header>
+      </template>
+
+      <template #aside>
+        <div class="hero-insight">
+          <p class="hero-insight__eyebrow">Operations Snapshot</p>
+          <strong class="hero-insight__value">{{ itemCount }} 件商品</strong>
+
+          <div class="hero-mini-grid hero-mini-grid--light">
+            <div class="hero-mini-card hero-mini-card--light">
+              <span>商品总数</span>
+              <strong>{{ itemCount }}</strong>
+            </div>
+            <div class="hero-mini-card hero-mini-card--light">
+              <span>在售库存</span>
+              <strong>{{ unsoldCount }}</strong>
+            </div>
+            <div class="hero-mini-card hero-mini-card--light">
+              <span>已成交</span>
+              <strong>{{ soldCount }}</strong>
+            </div>
+            <div class="hero-mini-card hero-mini-card--light">
+              <span>卖家数</span>
+              <strong>{{ sellerCount }}</strong>
+            </div>
+          </div>
+        </div>
+      </template>
+    </PageHero>
 
     <section class="panel-card">
+      <header class="panel-card__header">
+        <div>
+          <p class="section-kicker">Item Ledger</p>
+          <h3>商品数据库清单</h3>
+        </div>
+      </header>
+
       <el-table v-loading="loading" :data="sortedItems" border stripe empty-text="暂无商品数据">
         <el-table-column prop="item_id" label="商品编号" width="110" />
         <el-table-column prop="item_name" label="商品名称" min-width="160" />
@@ -163,7 +197,7 @@ onMounted(loadPageData);
       @submitted="handleCreated"
     />
 
-    <el-dialog v-model="priceDialogVisible" title="修改商品价格" width="420px">
+    <el-dialog v-model="priceDialogVisible" title="修改商品价格" width="460px">
       <el-form label-position="top">
         <el-form-item label="商品">
           <el-input :model-value="currentItem?.item_name ?? ''" disabled />

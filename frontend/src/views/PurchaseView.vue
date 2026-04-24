@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
+import PageHero from "../components/PageHero.vue";
 import { purchaseItem } from "../api/orders";
 import { getBasicReports } from "../api/reports";
 import { listUsers } from "../api/users";
@@ -24,6 +25,8 @@ const buyerOptions = computed(() =>
     value: user.user_id,
   })),
 );
+
+const availableCount = computed(() => unsoldItems.value.length);
 
 async function loadPurchaseData() {
   loading.value = true;
@@ -76,30 +79,53 @@ onMounted(loadPurchaseData);
 </script>
 
 <template>
-  <section class="page-section">
-    <header class="section-header">
-      <div>
-        <p class="section-kicker">事务购买演示</p>
-        <h1>只允许未售商品成交一次</h1>
-        <p class="section-copy">
-          点击购买后，后端会在一个事务中新增订单并把商品状态更新为已售，重复购买会被直接拒绝。
-        </p>
-      </div>
-
-      <div class="action-row">
-        <el-select v-model="selectedBuyer" placeholder="选择买家" style="min-width: 220px">
-          <el-option
-            v-for="buyer in buyerOptions"
-            :key="buyer.value"
-            :label="buyer.label"
-            :value="buyer.value"
-          />
-        </el-select>
+  <section class="page-section" v-loading="loading">
+    <PageHero
+      eyebrow="Transactional Purchase"
+      title="事务购买演示台"
+    >
+      <template #actions>
+        <div class="action-row action-row--field">
+          <span class="inline-field-label">选择成交买家</span>
+          <el-select v-model="selectedBuyer" placeholder="选择买家" style="min-width: 220px">
+            <el-option
+              v-for="buyer in buyerOptions"
+              :key="buyer.value"
+              :label="buyer.label"
+              :value="buyer.value"
+            />
+          </el-select>
+        </div>
         <el-button plain @click="loadPurchaseData">刷新可购买商品</el-button>
-      </div>
-    </header>
+      </template>
+
+      <template #aside>
+        <div class="hero-insight hero-insight--dark">
+          <p class="hero-insight__eyebrow">Transaction Snapshot</p>
+          <strong class="hero-insight__value">{{ availableCount }} 件可成交商品</strong>
+
+          <div class="hero-mini-grid">
+            <div class="hero-mini-card">
+              <span>候选买家</span>
+              <strong>{{ buyerOptions.length }}</strong>
+            </div>
+            <div class="hero-mini-card">
+              <span>可购买商品</span>
+              <strong>{{ availableCount }}</strong>
+            </div>
+          </div>
+        </div>
+      </template>
+    </PageHero>
 
     <section class="panel-card">
+      <header class="panel-card__header">
+        <div>
+          <p class="section-kicker">Available Inventory</p>
+          <h3>可购买商品清单</h3>
+        </div>
+      </header>
+
       <el-table
         v-loading="loading"
         :data="unsoldItems"
