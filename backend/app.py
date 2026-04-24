@@ -13,7 +13,7 @@ from backend.routes.users_api import users_api
 
 def create_app(config_overrides=None):
     app = Flask(__name__, static_folder=None)
-    app.config.from_object(Config)
+    app.config.from_mapping(Config.as_dict())
     if config_overrides:
         app.config.update(config_overrides)
 
