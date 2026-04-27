@@ -663,6 +663,157 @@ a {
   color: var(--text-body);
 }
 
+.flow-graphic {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 86% 24%, rgba(199, 0, 36, 0.08), transparent 26%),
+    var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.flow-graphic__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flow-graphic__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.flow-graphic__copy h3 {
+  margin: 0;
+  font-size: clamp(22px, 2.4vw, 32px);
+  line-height: 1.16;
+  letter-spacing: -0.02em;
+}
+
+.flow-graphic__canvas {
+  width: 100%;
+  min-height: 210px;
+}
+
+.flow-graphic__stream {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 16 16;
+  animation: flow-dash 2600ms linear infinite;
+}
+
+.flow-graphic__stream--soft {
+  stroke: rgba(17, 22, 31, 0.16);
+  stroke-width: 2;
+  animation-duration: 4200ms;
+  animation-direction: reverse;
+}
+
+.flow-graphic__node circle,
+.flow-graphic__step rect,
+.flow-graphic__database rect {
+  fill: #ffffff;
+  stroke: rgba(17, 22, 31, 0.14);
+  stroke-width: 2;
+}
+
+.flow-graphic__pulse {
+  animation: flow-pulse 2400ms ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.flow-graphic__pulse--delay-1 {
+  animation-delay: 180ms;
+}
+
+.flow-graphic__pulse--delay-2 {
+  animation-delay: 360ms;
+}
+
+.flow-graphic__pulse--delay-3 {
+  animation-delay: 540ms;
+}
+
+.flow-graphic text {
+  fill: var(--text-strong);
+  font-size: 16px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.flow-graphic text + text {
+  fill: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.flow-graphic__database rect {
+  fill: var(--surface-dark);
+  stroke: rgba(199, 0, 36, 0.42);
+}
+
+.flow-graphic__database text {
+  fill: var(--text-inverse);
+}
+
+.flow-graphic__database text + text {
+  fill: rgba(247, 248, 251, 0.74);
+}
+
+.flow-graphic__orbit {
+  fill: none;
+  stroke: rgba(199, 0, 36, 0.42);
+  stroke-width: 2;
+  stroke-dasharray: 12 14;
+  transform-origin: 360px 132px;
+  animation: flow-orbit 8200ms linear infinite;
+}
+
+.flow-graphic__orbit--reverse {
+  stroke: rgba(17, 22, 31, 0.18);
+  animation-direction: reverse;
+  animation-duration: 11000ms;
+}
+
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -64;
+  }
+}
+
+@keyframes flow-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(199, 0, 36, 0));
+  }
+
+  50% {
+    transform: scale(1.035);
+    filter: drop-shadow(0 10px 18px rgba(199, 0, 36, 0.16));
+  }
+}
+
+@keyframes flow-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .action-row--field {
   gap: 10px;
 }
@@ -798,6 +949,11 @@ code {
   .shortcut-grid,
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .flow-graphic {
+    grid-template-columns: 1fr;
+    padding: 20px;
   }
 }
 

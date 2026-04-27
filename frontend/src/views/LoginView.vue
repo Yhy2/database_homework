@@ -3,6 +3,7 @@ import { computed, reactive } from "vue";
 import { ElMessage } from "element-plus";
 import { useRoute, useRouter } from "vue-router";
 
+import LoginAccessGraphic from "../components/LoginAccessGraphic.vue";
 import PageHero from "../components/PageHero.vue";
 import {
   getExpectedDemoAccessToken,
@@ -82,6 +83,8 @@ function leaveMerchantMode() {
         </div>
       </template>
     </PageHero>
+
+    <LoginAccessGraphic />
 
     <section class="login-layout">
       <article class="login-card">

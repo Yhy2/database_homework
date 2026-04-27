@@ -4,6 +4,7 @@ import { ElMessage } from "element-plus";
 
 import MetricCard from "../components/MetricCard.vue";
 import PageHero from "../components/PageHero.vue";
+import QueryFlowGraphic from "../components/QueryFlowGraphic.vue";
 import ResultTable from "../components/ResultTable.vue";
 import {
   getAggregateReports,
@@ -300,6 +301,8 @@ onMounted(loadReports);
         tone="sea"
       />
     </div>
+
+    <QueryFlowGraphic />
 
     <section class="content-block">
       <header class="content-block__header">

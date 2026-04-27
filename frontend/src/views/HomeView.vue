@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 
+import AnimatedDataFlow from "../components/AnimatedDataFlow.vue";
 import MetricCard from "../components/MetricCard.vue";
 import PageHero from "../components/PageHero.vue";
 import { listItems } from "../api/items";
@@ -31,8 +32,8 @@ const modeLabel = computed(() =>
 const shortcuts = [
   {
     title: "商品管理",
-      path: "/items",
-      eyebrow: "Operations",
+    path: "/items",
+    eyebrow: "Operations",
   },
   {
     title: "查询统计",
@@ -126,6 +127,8 @@ onMounted(loadDashboard);
         </div>
       </template>
     </PageHero>
+
+    <AnimatedDataFlow />
 
     <div class="metric-grid">
       <MetricCard title="用户总数" :value="userCount" tone="sun" />

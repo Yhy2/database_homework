@@ -4,6 +4,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 
 import PageHero from "../components/PageHero.vue";
+import TransactionFlowGraphic from "../components/TransactionFlowGraphic.vue";
 import { purchaseItem } from "../api/orders";
 import { getBasicReports } from "../api/reports";
 import { listUsers } from "../api/users";
@@ -149,6 +150,8 @@ onMounted(loadPurchaseData);
         }}
       </p>
     </section>
+
+    <TransactionFlowGraphic />
 
     <section class="panel-card">
       <header class="panel-card__header">
