@@ -4,6 +4,8 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ ./
+ARG VITE_DEMO_ACCESS_TOKEN=local-demo-token
+ENV VITE_DEMO_ACCESS_TOKEN=$VITE_DEMO_ACCESS_TOKEN
 RUN npm run build
 
 FROM python:3.11-slim AS runtime
