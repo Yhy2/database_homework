@@ -256,6 +256,45 @@ a {
   gap: 28px;
 }
 
+.page-section > * {
+  animation: page-rise 520ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+.page-section > *:nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.page-section > *:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.page-section > *:nth-child(4) {
+  animation-delay: 200ms;
+}
+
+.page-route-enter-active,
+.page-route-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.page-route-enter-from,
+.page-route-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@keyframes page-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .page-hero,
 .content-block,
 .panel-card,
@@ -556,6 +595,7 @@ a {
   background:
     linear-gradient(90deg, var(--accent-soft), transparent 44%),
     var(--surface);
+  animation: page-rise 420ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
 }
 
 .mode-banner h3,
@@ -758,5 +798,15 @@ code {
   .shortcut-grid,
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

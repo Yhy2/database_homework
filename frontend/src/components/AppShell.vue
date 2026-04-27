@@ -97,7 +97,11 @@ function exitMerchantMode() {
     </header>
 
     <main class="page-frame">
-      <router-view />
+      <router-view v-slot="{ Component, route }">
+        <Transition name="page-route" mode="out-in">
+          <component :is="Component" :key="route.fullPath" />
+        </Transition>
+      </router-view>
     </main>
   </div>
 </template>
