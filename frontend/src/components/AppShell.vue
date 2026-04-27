@@ -2,8 +2,11 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import { useAuthSession } from "../auth/session";
+
 const route = useRoute();
 const router = useRouter();
+const { activeMerchantName, isMerchantAuthenticated, logoutMerchant } = useAuthSession();
 
 const navItems = [
   { label: "首页", path: "/" },
@@ -27,6 +30,17 @@ function openHome() {
 
 function openPage(path: string) {
   router.push(path);
+}
+
+function openLogin() {
+  router.push({
+    path: "/login",
+    query: { redirect: route.fullPath },
+  });
+}
+
+function exitMerchantMode() {
+  logoutMerchant();
 }
 </script>
 
@@ -54,6 +68,31 @@ function openPage(path: string) {
             {{ item.label }}
           </button>
         </nav>
+
+        <div class="site-header__actions">
+          <span
+            class="session-pill"
+            :class="{ 'session-pill--active': isMerchantAuthenticated }"
+          >
+            {{ isMerchantAuthenticated ? `商家：${activeMerchantName}` : "游客只读模式" }}
+          </span>
+          <button
+            v-if="isMerchantAuthenticated"
+            class="auth-button"
+            type="button"
+            @click="exitMerchantMode"
+          >
+            退出登录
+          </button>
+          <button
+            v-else
+            class="auth-button auth-button--primary"
+            type="button"
+            @click="openLogin"
+          >
+            商家登录
+          </button>
+        </div>
       </div>
     </header>
 

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useRouter } from "vue-router";
 
 import ItemFormDialog from "../components/ItemFormDialog.vue";
 import PageHero from "../components/PageHero.vue";
 import { deleteItem, listItems, updateItemPrice } from "../api/items";
 import { listUsers } from "../api/users";
+import { useAuthSession } from "../auth/session";
 import type { Item, User } from "../types";
 import {
   formatCategory,
@@ -16,6 +18,8 @@ import {
 } from "../utils/display";
 
 const loading = ref(false);
+const router = useRouter();
+const { isMerchantAuthenticated } = useAuthSession();
 const dialogVisible = ref(false);
 const priceDialogVisible = ref(false);
 const items = ref<Item[]>([]);
@@ -34,6 +38,7 @@ const itemCount = computed(() => items.value.length);
 const unsoldCount = computed(() => items.value.filter((item) => item.status === 0).length);
 const soldCount = computed(() => items.value.filter((item) => item.status === 1).length);
 const sellerCount = computed(() => new Set(items.value.map((item) => item.seller_id)).size);
+const canWrite = computed(() => isMerchantAuthenticated.value);
 
 async function loadPageData() {
   loading.value = true;
@@ -49,6 +54,11 @@ async function loadPageData() {
 }
 
 function openPriceDialog(item: Item) {
+  if (!canWrite.value) {
+    router.push("/login?redirect=/items");
+    return;
+  }
+
   currentItem.value = item;
   priceForm.price = Number(item.price);
   priceDialogVisible.value = true;
@@ -56,6 +66,11 @@ function openPriceDialog(item: Item) {
 
 async function submitPriceUpdate() {
   if (!currentItem.value) {
+    return;
+  }
+
+  if (!canWrite.value) {
+    ElMessage.warning("请先登录商家模式");
     return;
   }
 
@@ -70,6 +85,11 @@ async function submitPriceUpdate() {
 }
 
 async function removeCurrentItem(item: Item) {
+  if (!canWrite.value) {
+    router.push("/login?redirect=/items");
+    return;
+  }
+
   try {
     await ElMessageBox.confirm(
       `确认删除商品 ${item.item_name}（${item.item_id}）吗？`,
@@ -95,6 +115,15 @@ async function handleCreated() {
   await loadPageData();
 }
 
+function openCreateDialog() {
+  if (!canWrite.value) {
+    router.push("/login?redirect=/items");
+    return;
+  }
+
+  dialogVisible.value = true;
+}
+
 onMounted(loadPageData);
 </script>
 
@@ -106,7 +135,21 @@ onMounted(loadPageData);
     >
       <template #actions>
         <el-button plain @click="loadPageData">刷新台账</el-button>
-        <el-button type="primary" @click="dialogVisible = true">新增商品</el-button>
+        <el-button
+          v-if="canWrite"
+          type="primary"
+          @click="openCreateDialog"
+        >
+          新增商品
+        </el-button>
+        <el-button
+          v-else
+          type="primary"
+          plain
+          @click="openCreateDialog"
+        >
+          商家登录后上架
+        </el-button>
       </template>
 
       <template #aside>
@@ -135,6 +178,20 @@ onMounted(loadPageData);
         </div>
       </template>
     </PageHero>
+
+    <section class="mode-banner" :class="{ 'mode-banner--active': canWrite }">
+      <div>
+        <p class="section-kicker">Access Mode</p>
+        <h3>{{ canWrite ? "商家模式：可上架与维护商品" : "游客只读模式" }}</h3>
+      </div>
+      <p>
+        {{
+          canWrite
+            ? "当前写操作会携带演示令牌，可新增商品、改价或删除未售商品。"
+            : "当前只开放数据库读取结果，登录商家模式后才能上架商品。"
+        }}
+      </p>
+    </section>
 
     <section class="panel-card">
       <header class="panel-card__header">
@@ -167,7 +224,7 @@ onMounted(loadPageData);
         </el-table-column>
         <el-table-column label="操作" min-width="220" fixed="right">
           <template #default="{ row }">
-            <div class="table-actions">
+            <div v-if="canWrite" class="table-actions">
               <el-button
                 size="small"
                 plain
@@ -186,6 +243,7 @@ onMounted(loadPageData);
                 删除
               </el-button>
             </div>
+            <el-tag v-else type="info">登录后管理</el-tag>
           </template>
         </el-table-column>
       </el-table>

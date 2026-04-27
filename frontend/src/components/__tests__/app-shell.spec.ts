@@ -1,8 +1,10 @@
 import { mount } from "@vue/test-utils";
 import ElementPlus from "element-plus";
 import { createMemoryHistory, createRouter } from "vue-router";
+import { beforeEach } from "vitest";
 
 import AppShell from "../AppShell.vue";
+import { resetAuthSessionForTest } from "../../auth/session";
 
 async function mountShell(initialPath = "/") {
   const router = createRouter({
@@ -14,6 +16,7 @@ async function mountShell(initialPath = "/") {
       { path: "/orders", component: { template: "<div>orders page</div>" } },
       { path: "/stats", component: { template: "<div>stats page</div>" } },
       { path: "/purchase", component: { template: "<div>purchase page</div>" } },
+      { path: "/login", component: { template: "<div>login page</div>" } },
     ],
   });
 
@@ -28,6 +31,11 @@ async function mountShell(initialPath = "/") {
 }
 
 describe("AppShell", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    resetAuthSessionForTest();
+  });
+
   it("renders enterprise brand copy and all navigation entries", async () => {
     const wrapper = await mountShell();
 
@@ -41,6 +49,8 @@ describe("AppShell", () => {
     expect(wrapper.text()).toContain("订单列表");
     expect(wrapper.text()).toContain("查询统计");
     expect(wrapper.text()).toContain("购买演示");
+    expect(wrapper.text()).toContain("游客只读模式");
+    expect(wrapper.text()).toContain("商家登录");
   });
 
   it("marks the current route inside the global shell", async () => {

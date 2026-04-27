@@ -14,6 +14,12 @@ describe("surface interaction treatment", () => {
     expect(stylesheet).not.toContain("backdrop-filter:");
     expect(stylesheet).toMatch(/\.site-header__inner:hover\s*\{/);
     expect(stylesheet).toMatch(/\.page-hero:hover,\s*\.content-block:hover,\s*\.panel-card:hover/);
+    expect(stylesheet).toMatch(/\.app-shell__backdrop\s*\{[\s\S]*z-index:\s*0;/);
+    expect(stylesheet).toMatch(/\.site-header\s*\{[\s\S]*position:\s*relative;/);
+    expect(stylesheet).not.toMatch(/\.site-header\s*\{[\s\S]*position:\s*fixed;/);
+    expect(stylesheet).not.toMatch(/\.site-header\s*\{[\s\S]*position:\s*sticky;/);
+    expect(stylesheet).toMatch(/\.page-frame\s*\{[\s\S]*z-index:\s*1;/);
+    expect(stylesheet).toMatch(/\.page-frame\s*\{[\s\S]*padding:\s*28px\s*0\s*48px;/);
     expect(stylesheet).not.toMatch(/:focus-within/);
   });
 });

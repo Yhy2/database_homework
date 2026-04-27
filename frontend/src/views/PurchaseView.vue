@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useRouter } from "vue-router";
 
 import PageHero from "../components/PageHero.vue";
 import { purchaseItem } from "../api/orders";
 import { getBasicReports } from "../api/reports";
 import { listUsers } from "../api/users";
+import { useAuthSession } from "../auth/session";
 import type { Item, User } from "../types";
 import {
   formatCategory,
@@ -14,6 +16,8 @@ import {
 } from "../utils/display";
 
 const loading = ref(false);
+const router = useRouter();
+const { isMerchantAuthenticated } = useAuthSession();
 const submittingItemId = ref("");
 const users = ref<User[]>([]);
 const unsoldItems = ref<Item[]>([]);
@@ -27,6 +31,7 @@ const buyerOptions = computed(() =>
 );
 
 const availableCount = computed(() => unsoldItems.value.length);
+const canWrite = computed(() => isMerchantAuthenticated.value);
 
 async function loadPurchaseData() {
   loading.value = true;
@@ -43,6 +48,11 @@ async function loadPurchaseData() {
 }
 
 async function handlePurchase(item: Item) {
+  if (!canWrite.value) {
+    router.push("/login?redirect=/purchase");
+    return;
+  }
+
   if (!selectedBuyer.value) {
     ElMessage.warning("请先选择买家");
     return;
@@ -97,6 +107,14 @@ onMounted(loadPurchaseData);
           </el-select>
         </div>
         <el-button plain @click="loadPurchaseData">刷新可购买商品</el-button>
+        <el-button
+          v-if="!canWrite"
+          type="primary"
+          plain
+          @click="router.push('/login?redirect=/purchase')"
+        >
+          登录后购买
+        </el-button>
       </template>
 
       <template #aside>
@@ -117,6 +135,20 @@ onMounted(loadPurchaseData);
         </div>
       </template>
     </PageHero>
+
+    <section class="mode-banner" :class="{ 'mode-banner--active': canWrite }">
+      <div>
+        <p class="section-kicker">Transaction Access</p>
+        <h3>{{ canWrite ? "商家模式：可执行购买事务" : "游客只读模式" }}</h3>
+      </div>
+      <p>
+        {{
+          canWrite
+            ? "购买会写入订单并更新商品状态，用于演示事务和重复购买拦截。"
+            : "当前只展示可购买商品数据，登录后才会触发购买写操作。"
+        }}
+      </p>
+    </section>
 
     <section class="panel-card">
       <header class="panel-card__header">
@@ -151,10 +183,10 @@ onMounted(loadPurchaseData);
             <el-button
               type="primary"
               :loading="submittingItemId === row.item_id"
-              :disabled="!selectedBuyer"
+              :disabled="!selectedBuyer || !canWrite"
               @click="handlePurchase(row)"
             >
-              立即购买
+              {{ canWrite ? "立即购买" : "登录后购买" }}
             </el-button>
           </template>
         </el-table-column>

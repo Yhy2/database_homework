@@ -1,8 +1,10 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import ElementPlus from "element-plus";
-import { vi } from "vitest";
+import { createMemoryHistory, createRouter } from "vue-router";
+import { beforeEach, vi } from "vitest";
 
 import PurchaseView from "../PurchaseView.vue";
+import { resetAuthSessionForTest } from "../../auth/session";
 
 vi.mock("../../api/orders", () => ({
   purchaseItem: vi.fn(),
@@ -35,10 +37,25 @@ vi.mock("../../api/reports", () => ({
 }));
 
 describe("PurchaseView", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    resetAuthSessionForTest();
+  });
+
   it("renders the transaction demo page without explanatory rule modules", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: "/purchase", component: PurchaseView },
+        { path: "/login", component: { template: "<div>login page</div>" } },
+      ],
+    });
+    router.push("/purchase");
+    await router.isReady();
+
     const wrapper = mount(PurchaseView, {
       global: {
-        plugins: [ElementPlus],
+        plugins: [router, ElementPlus],
       },
     });
 
@@ -46,7 +63,8 @@ describe("PurchaseView", () => {
 
     expect(wrapper.text()).toContain("事务购买演示台");
     expect(wrapper.text()).toContain("选择成交买家");
-    expect(wrapper.text()).toContain("立即购买");
+    expect(wrapper.text()).toContain("游客只读模式");
+    expect(wrapper.text()).toContain("登录后购买");
     expect(wrapper.text()).not.toContain("事务规则说明");
   });
 });

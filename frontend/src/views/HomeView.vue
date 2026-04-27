@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 
@@ -10,10 +10,12 @@ import { listOrders } from "../api/orders";
 import { getAggregateReports } from "../api/reports";
 import { getHealth } from "../api/system";
 import { listUsers } from "../api/users";
+import { useAuthSession } from "../auth/session";
 import { getErrorMessage } from "../utils/display";
 
 const router = useRouter();
 const loading = ref(false);
+const { isMerchantAuthenticated, activeMerchantName } = useAuthSession();
 
 const healthLabel = ref("检测中");
 const userCount = ref(0);
@@ -22,12 +24,15 @@ const orderCount = ref(0);
 const unsoldCount = ref(0);
 const averagePrice = ref("¥0.00");
 const topSeller = ref("-");
+const modeLabel = computed(() =>
+  isMerchantAuthenticated.value ? `商家模式：${activeMerchantName.value}` : "游客只读模式",
+);
 
 const shortcuts = [
   {
     title: "商品管理",
-    path: "/items",
-    eyebrow: "Operations",
+      path: "/items",
+      eyebrow: "Operations",
   },
   {
     title: "查询统计",
@@ -70,6 +75,15 @@ function openPage(path: string) {
   router.push(path);
 }
 
+function openMerchantEntry() {
+  if (isMerchantAuthenticated.value) {
+    router.push("/items");
+    return;
+  }
+
+  router.push("/login?redirect=/items");
+}
+
 onMounted(loadDashboard);
 </script>
 
@@ -77,21 +91,24 @@ onMounted(loadDashboard);
   <section class="page-section" v-loading="loading">
     <PageHero
       eyebrow="Campus Exchange Platform"
-      title="数据库作业，也可以像企业官网一样呈现"
+      title="把数据库作业做成可浏览的校园二手市集"
     >
       <template #actions>
-        <el-button type="primary" @click="openPage('/stats')">查看系统能力</el-button>
-        <el-button plain @click="openPage('/items')">进入商品管理</el-button>
+        <el-button type="primary" @click="openPage('/items')">浏览商品</el-button>
+        <el-button plain @click="openMerchantEntry">
+          {{ isMerchantAuthenticated ? "进入商家工作区" : "商家登录上架" }}
+        </el-button>
+        <el-button plain @click="openPage('/stats')">查看数据库能力</el-button>
       </template>
 
       <template #aside>
         <div class="hero-insight hero-insight--dark">
           <p class="hero-insight__eyebrow">运行状态</p>
-          <strong class="hero-insight__value">{{ healthLabel }}</strong>
+          <strong class="hero-insight__value">{{ modeLabel }}</strong>
           <div class="hero-mini-grid">
             <div class="hero-mini-card">
-              <span>用户</span>
-              <strong>{{ userCount }}</strong>
+              <span>数据库</span>
+              <strong>{{ healthLabel }}</strong>
             </div>
             <div class="hero-mini-card">
               <span>商品</span>
@@ -122,7 +139,7 @@ onMounted(loadDashboard);
     <section class="content-block">
       <header class="content-block__header">
         <p class="section-kicker">Entry Modules</p>
-        <h2>核心业务入口</h2>
+        <h2>保留原有结构的核心入口</h2>
       </header>
 
       <div class="shortcut-grid">

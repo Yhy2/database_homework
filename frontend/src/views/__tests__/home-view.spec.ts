@@ -1,9 +1,10 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import ElementPlus from "element-plus";
 import { createMemoryHistory, createRouter } from "vue-router";
-import { vi } from "vitest";
+import { beforeEach, vi } from "vitest";
 
 import HomeView from "../HomeView.vue";
+import { resetAuthSessionForTest } from "../../auth/session";
 
 vi.mock("../../api/system", () => ({
   getHealth: vi.fn().mockResolvedValue({ status: "ok", database: "ok" }),
@@ -50,7 +51,12 @@ vi.mock("../../api/reports", () => ({
 async function mountHome() {
   const router = createRouter({
     history: createMemoryHistory(),
-    routes: [{ path: "/", component: HomeView }],
+    routes: [
+      { path: "/", component: HomeView },
+      { path: "/items", component: { template: "<div>items page</div>" } },
+      { path: "/login", component: { template: "<div>login page</div>" } },
+      { path: "/stats", component: { template: "<div>stats page</div>" } },
+    ],
   });
 
   router.push("/");
@@ -67,14 +73,21 @@ async function mountHome() {
 }
 
 describe("HomeView", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    resetAuthSessionForTest();
+  });
+
   it("renders a dashboard-only homepage without explanatory sections", async () => {
     const wrapper = await mountHome();
 
-    expect(wrapper.text()).toContain("数据库作业，也可以像企业官网一样呈现");
-    expect(wrapper.text()).toContain("核心业务入口");
+    expect(wrapper.text()).toContain("把数据库作业做成可浏览的校园二手市集");
+    expect(wrapper.text()).toContain("保留原有结构的核心入口");
     expect(wrapper.text()).toContain("商品管理");
     expect(wrapper.text()).toContain("查询统计");
     expect(wrapper.text()).toContain("事务购买演示");
+    expect(wrapper.text()).toContain("游客只读模式");
+    expect(wrapper.text()).toContain("商家登录上架");
     expect(wrapper.text()).not.toContain("系统运行概览");
     expect(wrapper.text()).not.toContain("作业能力覆盖");
   });

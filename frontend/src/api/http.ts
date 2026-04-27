@@ -1,5 +1,7 @@
 import axios, { AxiosError, type AxiosRequestConfig } from "axios";
 
+import { getMerchantAccessToken } from "../auth/session";
+
 interface ApiEnvelope<T> {
   code: number;
   message: string;
@@ -22,14 +24,18 @@ const http = axios.create({
   timeout: 10000,
 });
 
-http.interceptors.request.use((config) => {
+export function attachDemoTokenForWrite(config: AxiosRequestConfig) {
   const method = config.method?.toLowerCase();
-  const demoToken = import.meta.env.VITE_DEMO_ACCESS_TOKEN || "local-demo-token";
+  const demoToken = getMerchantAccessToken();
   if (demoToken && method && ["post", "patch", "delete"].includes(method)) {
-    config.headers = config.headers ?? {};
+    config.headers = { ...(config.headers ?? {}) };
     config.headers["X-Demo-Token"] = demoToken;
   }
   return config;
+}
+
+http.interceptors.request.use((config) => {
+  return attachDemoTokenForWrite(config);
 });
 
 export async function request<T>(config: AxiosRequestConfig) {

@@ -67,21 +67,23 @@ a {
 
 .app-shell {
   position: relative;
+  isolation: isolate;
 }
 
 .app-shell__backdrop {
   position: fixed;
   inset: 0;
+  z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0)),
     radial-gradient(circle at 86% 12%, rgba(199, 0, 36, 0.06), transparent 20%);
 }
 
 .site-header {
-  position: sticky;
+  position: relative;
   top: 0;
-  z-index: 20;
+  z-index: 2;
   padding: 18px 0 0;
 }
 
@@ -152,6 +154,62 @@ a {
   gap: 8px;
 }
 
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.session-pill,
+.auth-button {
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.session-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  color: var(--text-soft);
+  background: rgba(17, 22, 31, 0.04);
+}
+
+.session-pill--active {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.auth-button {
+  border: 1px solid var(--line);
+  padding: 9px 14px;
+  color: var(--text-strong);
+  background: var(--surface);
+  cursor: pointer;
+  transition: color 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.auth-button:hover {
+  color: var(--accent);
+  border-color: rgba(199, 0, 36, 0.24);
+  background: var(--accent-soft);
+}
+
+.auth-button--primary {
+  color: var(--text-inverse);
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.auth-button--primary:hover {
+  color: var(--text-inverse);
+  border-color: #d61d3d;
+  background: #d61d3d;
+}
+
 .nav-item {
   position: relative;
   border: 0;
@@ -185,6 +243,8 @@ a {
 }
 
 .page-frame {
+  position: relative;
+  z-index: 1;
   width: var(--page-width);
   margin: 0 auto;
   padding: 28px 0 48px;
@@ -230,6 +290,7 @@ a {
   grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.9fr);
   gap: 28px;
   padding: 34px;
+  background: var(--surface-strong);
 }
 
 .page-hero--single {
@@ -473,6 +534,95 @@ a {
   margin-bottom: 16px;
 }
 
+.mode-banner,
+.login-card,
+.access-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.mode-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 20px 24px;
+}
+
+.mode-banner--active {
+  border-color: rgba(199, 0, 36, 0.22);
+  background:
+    linear-gradient(90deg, var(--accent-soft), transparent 44%),
+    var(--surface);
+}
+
+.mode-banner h3,
+.mode-banner p,
+.login-card h2,
+.access-card h3 {
+  margin: 0;
+}
+
+.mode-banner > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mode-banner > p {
+  max-width: 680px;
+  color: var(--text-body);
+}
+
+.login-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 22px;
+}
+
+.login-card,
+.access-card {
+  padding: 28px;
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-card__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.access-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.access-rule {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.access-rule strong {
+  color: var(--text-strong);
+}
+
+.access-rule span {
+  color: var(--text-body);
+}
+
 .action-row--field {
   gap: 10px;
 }
@@ -550,6 +700,10 @@ code {
     grid-template-columns: 1fr;
   }
 
+  .login-layout {
+    grid-template-columns: 1fr;
+  }
+
   .site-header__inner {
     border-radius: 28px;
   }
@@ -576,8 +730,10 @@ code {
     justify-content: flex-start;
   }
 
-  .page-frame {
-    padding-top: 20px;
+  .site-header__actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .page-hero,
@@ -592,7 +748,8 @@ code {
   }
 
   .content-block__header,
-  .section-header {
+  .section-header,
+  .mode-banner {
     flex-direction: column;
     align-items: flex-start;
   }

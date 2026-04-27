@@ -1,8 +1,10 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import ElementPlus from "element-plus";
-import { vi } from "vitest";
+import { createMemoryHistory, createRouter } from "vue-router";
+import { beforeEach, vi } from "vitest";
 
 import ItemsView from "../ItemsView.vue";
+import { resetAuthSessionForTest } from "../../auth/session";
 
 vi.mock("../../api/items", () => ({
   listItems: vi.fn().mockResolvedValue([
@@ -37,10 +39,25 @@ vi.mock("../../api/users", () => ({
 }));
 
 describe("ItemsView", () => {
-  it("renders the enterprise operations hero and summary metrics", async () => {
+  beforeEach(() => {
+    localStorage.clear();
+    resetAuthSessionForTest();
+  });
+
+  it("renders a read-only item ledger for visitors", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: "/items", component: ItemsView },
+        { path: "/login", component: { template: "<div>login page</div>" } },
+      ],
+    });
+    router.push("/items");
+    await router.isReady();
+
     const wrapper = mount(ItemsView, {
       global: {
-        plugins: [ElementPlus],
+        plugins: [router, ElementPlus],
       },
     });
 
@@ -49,6 +66,8 @@ describe("ItemsView", () => {
     expect(wrapper.text()).toContain("商品台账与供给管理");
     expect(wrapper.text()).toContain("商品总数");
     expect(wrapper.text()).toContain("在售库存");
-    expect(wrapper.text()).toContain("新增商品");
+    expect(wrapper.text()).toContain("游客只读模式");
+    expect(wrapper.text()).toContain("商家登录后上架");
+    expect(wrapper.text()).not.toContain("新增商品");
   });
 });
