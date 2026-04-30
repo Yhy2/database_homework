@@ -26,7 +26,7 @@ const unsoldCount = ref(0);
 const averagePrice = ref("¥0.00");
 const topSeller = ref("-");
 const modeLabel = computed(() =>
-  isMerchantAuthenticated.value ? `商家模式：${activeMerchantName.value}` : "游客只读模式",
+  isMerchantAuthenticated.value ? `已登录：${activeMerchantName.value}` : "游客只读模式",
 );
 
 const shortcuts = [
@@ -76,7 +76,7 @@ function openPage(path: string) {
   router.push(path);
 }
 
-function openMerchantEntry() {
+function openAccountEntry() {
   if (isMerchantAuthenticated.value) {
     router.push("/items");
     return;
@@ -96,8 +96,8 @@ onMounted(loadDashboard);
     >
       <template #actions>
         <el-button type="primary" @click="openPage('/items')">浏览商品</el-button>
-        <el-button plain @click="openMerchantEntry">
-          {{ isMerchantAuthenticated ? "进入商家工作区" : "商家登录上架" }}
+        <el-button plain @click="openAccountEntry">
+          {{ isMerchantAuthenticated ? "进入商品管理" : "登录/注册上架" }}
         </el-button>
         <el-button plain @click="openPage('/stats')">查看数据库能力</el-button>
       </template>

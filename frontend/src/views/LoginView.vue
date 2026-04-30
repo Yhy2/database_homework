@@ -1,25 +1,32 @@
 <script setup lang="ts">
-import { computed, reactive } from "vue";
+import { computed, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useRoute, useRouter } from "vue-router";
 
+import { login, loginDemoAccount, register } from "../api/auth";
 import LoginAccessGraphic from "../components/LoginAccessGraphic.vue";
 import PageHero from "../components/PageHero.vue";
-import {
-  getExpectedDemoAccessToken,
-  loginMerchant,
-  useAuthSession,
-} from "../auth/session";
+import { saveAuthSession, useAuthSession } from "../auth/session";
+import { getErrorMessage } from "../utils/display";
 
 const route = useRoute();
 const router = useRouter();
-const { isMerchantAuthenticated, activeMerchantName, logoutMerchant } = useAuthSession();
+const { isAuthenticated, activeUserName, logoutMerchant } = useAuthSession();
 
-const expectedToken = getExpectedDemoAccessToken();
+const mode = ref<"login" | "register">("login");
+const submitting = ref(false);
+const demoLoading = ref(false);
 
-const form = reactive({
-  merchantName: "Campus Merchant",
-  accessToken: expectedToken,
+const loginForm = reactive({
+  user_id: "",
+  password: "",
+});
+
+const registerForm = reactive({
+  user_id: "",
+  user_name: "",
+  phone: "",
+  password: "",
 });
 
 const redirectTarget = computed(() => {
@@ -27,28 +34,70 @@ const redirectTarget = computed(() => {
   return typeof redirect === "string" && redirect.startsWith("/") ? redirect : "/items";
 });
 
-function submitLogin() {
-  if (!form.merchantName.trim()) {
-    ElMessage.warning("请输入商家名称");
-    return;
-  }
-
-  if (form.accessToken !== expectedToken) {
-    ElMessage.error("演示令牌不正确");
-    return;
-  }
-
-  loginMerchant({
-    merchantName: form.merchantName,
-    accessToken: form.accessToken,
-  });
-  ElMessage.success("已进入商家模式");
+function finishLogin(session: Awaited<ReturnType<typeof login>>) {
+  saveAuthSession(session);
+  ElMessage.success(`已登录：${session.user.user_name}`);
   router.push(redirectTarget.value);
 }
 
-function leaveMerchantMode() {
+async function submitLogin() {
+  if (!loginForm.user_id.trim() || !loginForm.password) {
+    ElMessage.warning("请输入用户编号和密码");
+    return;
+  }
+
+  submitting.value = true;
+  try {
+    finishLogin(await login({ ...loginForm, user_id: loginForm.user_id.trim() }));
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error));
+  } finally {
+    submitting.value = false;
+  }
+}
+
+async function submitRegister() {
+  if (
+    !registerForm.user_id.trim() ||
+    !registerForm.user_name.trim() ||
+    !registerForm.phone.trim() ||
+    !registerForm.password
+  ) {
+    ElMessage.warning("请完整填写注册信息");
+    return;
+  }
+
+  submitting.value = true;
+  try {
+    finishLogin(
+      await register({
+        user_id: registerForm.user_id.trim(),
+        user_name: registerForm.user_name.trim(),
+        phone: registerForm.phone.trim(),
+        password: registerForm.password,
+      }),
+    );
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error));
+  } finally {
+    submitting.value = false;
+  }
+}
+
+async function useDemoAccount() {
+  demoLoading.value = true;
+  try {
+    finishLogin(await loginDemoAccount());
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error));
+  } finally {
+    demoLoading.value = false;
+  }
+}
+
+function leaveCurrentAccount() {
   logoutMerchant();
-  ElMessage.success("已退出商家模式");
+  ElMessage.success("已退出登录");
   router.push("/");
 }
 </script>
@@ -56,8 +105,8 @@ function leaveMerchantMode() {
 <template>
   <section class="page-section">
     <PageHero
-      eyebrow="Merchant Access"
-      title="商家登录后开放商品上架"
+      eyebrow="Account Access"
+      title="登录或注册后开放商品上架"
     >
       <template #actions>
         <el-button plain @click="router.push('/')">返回首页</el-button>
@@ -68,7 +117,7 @@ function leaveMerchantMode() {
         <div class="hero-insight hero-insight--dark">
           <p class="hero-insight__eyebrow">Access Mode</p>
           <strong class="hero-insight__value">
-            {{ isMerchantAuthenticated ? "商家模式" : "游客只读模式" }}
+            {{ isAuthenticated ? `已登录：${activeUserName}` : "游客只读模式" }}
           </strong>
           <div class="hero-mini-grid">
             <div class="hero-mini-card">
@@ -76,8 +125,8 @@ function leaveMerchantMode() {
               <strong>开放</strong>
             </div>
             <div class="hero-mini-card">
-              <span>上架商品</span>
-              <strong>{{ isMerchantAuthenticated ? "开放" : "登录后" }}</strong>
+              <span>写入操作</span>
+              <strong>{{ isAuthenticated ? "开放" : "登录后" }}</strong>
             </div>
           </div>
         </div>
@@ -88,30 +137,68 @@ function leaveMerchantMode() {
 
     <section class="login-layout">
       <article class="login-card">
-        <p class="section-kicker">Merchant Console</p>
-        <h2>进入商家模式</h2>
+        <p class="section-kicker">Account Console</p>
+        <h2>{{ mode === "login" ? "账号登录" : "注册新账号" }}</h2>
 
-        <el-form label-position="top" @submit.prevent>
-          <el-form-item label="商家名称">
-            <el-input v-model="form.merchantName" placeholder="例如 Campus Merchant" />
+        <el-segmented
+          v-model="mode"
+          :options="[
+            { label: '登录', value: 'login' },
+            { label: '注册', value: 'register' },
+          ]"
+        />
+
+        <el-form v-if="mode === 'login'" label-position="top" @submit.prevent>
+          <el-form-item label="用户编号">
+            <el-input v-model="loginForm.user_id" placeholder="例如 u001" />
           </el-form-item>
-          <el-form-item label="演示访问令牌">
+          <el-form-item label="密码">
             <el-input
-              v-model="form.accessToken"
-              placeholder="输入演示令牌"
+              v-model="loginForm.password"
+              placeholder="输入密码"
               show-password
+              @keyup.enter="submitLogin"
+            />
+          </el-form-item>
+        </el-form>
+
+        <el-form v-else label-position="top" @submit.prevent>
+          <el-form-item label="用户编号">
+            <el-input v-model="registerForm.user_id" placeholder="例如 u101" />
+          </el-form-item>
+          <el-form-item label="用户名">
+            <el-input v-model="registerForm.user_name" placeholder="例如 ChenQi" />
+          </el-form-item>
+          <el-form-item label="手机号">
+            <el-input v-model="registerForm.phone" placeholder="例如 13900000001" />
+          </el-form-item>
+          <el-form-item label="密码">
+            <el-input
+              v-model="registerForm.password"
+              placeholder="至少 6 位"
+              show-password
+              @keyup.enter="submitRegister"
             />
           </el-form-item>
         </el-form>
 
         <div class="login-card__actions">
-          <el-button type="primary" @click="submitLogin">登录并上架商品</el-button>
           <el-button
-            v-if="isMerchantAuthenticated"
-            plain
-            @click="leaveMerchantMode"
+            type="primary"
+            :loading="submitting"
+            @click="mode === 'login' ? submitLogin() : submitRegister()"
           >
-            退出当前商家
+            {{ mode === "login" ? "登录并进入" : "注册并登录" }}
+          </el-button>
+          <el-button plain :loading="demoLoading" @click="useDemoAccount">
+            一键演示登录
+          </el-button>
+          <el-button
+            v-if="isAuthenticated"
+            plain
+            @click="leaveCurrentAccount"
+          >
+            退出当前账号
           </el-button>
         </div>
       </article>
@@ -121,15 +208,19 @@ function leaveMerchantMode() {
         <h3>当前权限边界</h3>
         <div class="access-rule">
           <strong>游客只读</strong>
-          <span>可查看商品、用户、订单、查询统计，不会携带写接口令牌。</span>
+          <span>可查看商品、用户、订单和统计，不会触发新增、改价、删除或购买写入。</span>
         </div>
         <div class="access-rule">
-          <strong>商家可写</strong>
-          <span>登录后开放商品上架，并允许演示改价、删除和购买事务。</span>
+          <strong>账号可写</strong>
+          <span>登录或注册成功后，写请求会携带服务端签发的登录凭证。</span>
+        </div>
+        <div class="access-rule">
+          <strong>演示账号</strong>
+          <span>点击一键演示登录即可使用内置账号，无需输入用户编号或密码。</span>
         </div>
         <div class="access-rule">
           <strong>当前身份</strong>
-          <span>{{ activeMerchantName }}</span>
+          <span>{{ activeUserName }}</span>
         </div>
       </aside>
     </section>

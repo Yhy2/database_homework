@@ -40,8 +40,8 @@ describe("animated flow graphics", () => {
     const wrapper = mount(LoginAccessGraphic);
 
     expect(wrapper.text()).toContain("游客只读");
-    expect(wrapper.text()).toContain("令牌校验");
-    expect(wrapper.text()).toContain("商家模式");
+    expect(wrapper.text()).toContain("账号认证");
+    expect(wrapper.text()).toContain("账号模式");
     expect(wrapper.text()).toContain("上架商品");
     expect(wrapper.find(".flow-graphic__stream").exists()).toBe(true);
   });

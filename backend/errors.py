@@ -16,6 +16,11 @@ class ForbiddenError(ApiError):
         super().__init__(message, code=40301, http_status=403)
 
 
+class UnauthorizedError(ApiError):
+    def __init__(self, message):
+        super().__init__(message, code=40101, http_status=401)
+
+
 class NotFoundError(ApiError):
     def __init__(self, message):
         super().__init__(message, code=40401, http_status=404)

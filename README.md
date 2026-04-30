@@ -77,9 +77,9 @@
 
 后端使用 `SELECT ... FOR UPDATE` 和 `orders.item_id` 唯一约束共同防止重复购买。
 
-### 7. 演示级写操作保护
+### 7. 注册登录与写操作保护
 
-新增、改价、删除和购买接口需要携带 `X-Demo-Token` 请求头。普通访客默认只能读取数据，进入商家模式后才能执行写操作。
+支持用户注册、账号密码登录和一键演示登录。普通访客默认只能读取数据，登录后前端会携带服务端签发的 `Bearer` token 执行新增、改价、删除和购买操作。
 
 ## 项目结构
 
@@ -90,10 +90,11 @@ database_homework/
 │   ├── config.py                环境变量和应用配置
 │   ├── db.py                    MySQL 连接、查询和事务封装
 │   ├── errors.py                API 异常类型定义
-│   ├── responses.py             统一 JSON 响应和写操作令牌校验
+│   ├── responses.py             统一 JSON 响应和登录凭证校验
 │   ├── routes/                  API 路由层
 │   │   ├── health_api.py        健康检查接口
-│   │   ├── users_api.py         用户接口
+│   │   ├── auth_api.py          注册、登录、演示登录和当前用户接口
+│   │   ├── users_api.py         用户列表接口
 │   │   ├── items_api.py         商品接口
 │   │   ├── orders_api.py        订单与购买接口
 │   │   ├── reports_api.py       查询统计和视图接口
@@ -108,7 +109,7 @@ database_homework/
 │   ├── vite.config.ts           Vite 配置和开发代理
 │   └── src/
 │       ├── api/                 Axios 请求封装和各模块 API
-│       ├── auth/                商家模式本地会话和令牌处理
+│       ├── auth/                账号本地会话和登录凭证处理
 │       ├── components/          通用页面组件和数据流图形组件
 │       ├── router/              前端路由配置
 │       ├── styles/              全局样式
@@ -120,7 +121,8 @@ database_homework/
 │   ├── 02_seed.sql              初始化用户、商品和订单数据
 │   ├── 03_views.sql             创建已售和未售商品视图
 │   ├── 04_queries.sql           作业要求 SQL 查询归档
-│   └── 05_purchase.sql          购买事务示意 SQL
+│   ├── 05_purchase.sql          购买事务示意 SQL
+│   └── 06_auth_migration.sql    旧数据库增加登录密码字段的迁移 SQL
 ├── tests/                       后端测试
 │   ├── conftest.py              测试数据库初始化和测试客户端
 │   ├── test_api.py              API 功能测试
@@ -146,7 +148,7 @@ database_homework/
 
 | 表名 | 说明 |
 | --- | --- |
-| `user` | 用户表，保存用户编号、用户名和手机号 |
+| `user` | 用户表，保存用户编号、用户名、手机号和密码哈希 |
 | `item` | 商品表，保存商品编号、名称、分类、价格、状态和卖家编号 |
 | `orders` | 订单表，保存订单编号、商品编号、买家编号和下单日期 |
 
@@ -165,6 +167,10 @@ database_homework/
 | 方法 | 路径 | 功能 |
 | --- | --- | --- |
 | `GET` | `/api/health` | 健康检查 |
+| `POST` | `/api/auth/register` | 注册账号并返回登录凭证 |
+| `POST` | `/api/auth/login` | 账号密码登录 |
+| `POST` | `/api/auth/demo` | 一键演示登录 |
+| `GET` | `/api/auth/me` | 查询当前登录用户 |
 | `GET` | `/api/users` | 查询用户列表 |
 | `GET` | `/api/items` | 查询商品列表 |
 | `POST` | `/api/items` | 新增商品 |
@@ -181,7 +187,7 @@ database_homework/
 写操作接口需要请求头：
 
 ```http
-X-Demo-Token: 你的演示令牌
+Authorization: Bearer 你的登录凭证
 ```
 
 ## 快速启动
@@ -196,6 +202,12 @@ docker compose up --build -d
 
 ```text
 http://localhost:8080
+```
+
+如果是已有数据卷升级到注册登录版本，需要执行一次：
+
+```bash
+docker compose exec db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"' < sql/06_auth_migration.sql
 ```
 
 停止服务：
@@ -238,7 +250,6 @@ cp .env.production.example .env
 APP_PORT=80
 MYSQL_DATABASE=campus_secondhand
 MYSQL_ROOT_PASSWORD=一个长随机密码
-DEMO_ACCESS_TOKEN=一个长随机令牌
 ```
 
 启动生产服务：
@@ -296,8 +307,8 @@ npm run build
 | `MYSQL_USER` | 数据库用户 | `root` |
 | `MYSQL_PASSWORD` | 数据库密码 | `root` |
 | `MYSQL_ROOT_PASSWORD` | MySQL root 密码 | `root` |
-| `DEMO_ACCESS_TOKEN` | 后端写操作演示令牌 | `local-demo-token` |
-| `VITE_DEMO_ACCESS_TOKEN` | 前端商家模式演示令牌 | `local-demo-token` |
+| `SECRET_KEY` | 登录凭证签名密钥 | `campus-secondhand-demo-secret` |
+| `AUTH_TOKEN_MAX_AGE_SECONDS` | 登录凭证有效期 | `604800` |
 
 不要把真实 `.env` 文件提交到 Git。
 

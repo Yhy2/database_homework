@@ -23,8 +23,6 @@ services:
   backend:
     build:
       context: .
-      args:
-        VITE_DEMO_ACCESS_TOKEN: ${DEMO_ACCESS_TOKEN:-local-demo-token}
     restart: unless-stopped
     depends_on:
       db:
@@ -38,7 +36,8 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-root}
       MYSQL_ROOT_USER: ${MYSQL_ROOT_USER:-root}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-      DEMO_ACCESS_TOKEN: ${DEMO_ACCESS_TOKEN:-local-demo-token}
+      SECRET_KEY: ${SECRET_KEY:-campus-secondhand-demo-secret}
+      AUTH_TOKEN_MAX_AGE_SECONDS: ${AUTH_TOKEN_MAX_AGE_SECONDS:-604800}
     ports:
       - "${APP_PORT:-8080}:5000"
 

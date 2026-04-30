@@ -1,34 +1,34 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import {
-  getMerchantAccessToken,
+  getAuthToken,
   isMerchantAuthenticated,
   loginMerchant,
   logoutMerchant,
   resetAuthSessionForTest,
 } from "../session";
 
-describe("merchant session", () => {
+describe("auth session", () => {
   beforeEach(() => {
     localStorage.clear();
     resetAuthSessionForTest();
   });
 
-  it("keeps visitors in read-only mode until merchant login succeeds", () => {
+  it("keeps visitors in read-only mode until account login succeeds", () => {
     expect(isMerchantAuthenticated.value).toBe(false);
-    expect(getMerchantAccessToken()).toBe("");
+    expect(getAuthToken()).toBe("");
 
     loginMerchant({
-      merchantName: "ZhangSan",
-      accessToken: "local-demo-token",
+      user: { user_id: "u001", user_name: "ZhangSan", phone: "13800000001" },
+      token: "signed-token",
     });
 
     expect(isMerchantAuthenticated.value).toBe(true);
-    expect(getMerchantAccessToken()).toBe("local-demo-token");
+    expect(getAuthToken()).toBe("signed-token");
 
     logoutMerchant();
 
     expect(isMerchantAuthenticated.value).toBe(false);
-    expect(getMerchantAccessToken()).toBe("");
+    expect(getAuthToken()).toBe("");
   });
 });

@@ -1,7 +1,7 @@
-def test_purchase_marks_item_sold_and_creates_order(client, demo_headers, fetch_one):
+def test_purchase_marks_item_sold_and_creates_order(client, auth_headers, fetch_one):
     response = client.post(
         "/api/purchase",
-        headers=demo_headers,
+        headers=auth_headers,
         json={"item_id": "i001", "buyer_id": "u003", "order_date": "2024-05-10"},
     )
 
@@ -20,15 +20,15 @@ def test_purchase_marks_item_sold_and_creates_order(client, demo_headers, fetch_
     assert order_row["buyer_id"] == "u003"
 
 
-def test_duplicate_purchase_is_rejected(client, demo_headers):
+def test_duplicate_purchase_is_rejected(client, auth_headers):
     first_response = client.post(
         "/api/purchase",
-        headers=demo_headers,
+        headers=auth_headers,
         json={"item_id": "i003", "buyer_id": "u004", "order_date": "2024-05-11"},
     )
     second_response = client.post(
         "/api/purchase",
-        headers=demo_headers,
+        headers=auth_headers,
         json={"item_id": "i003", "buyer_id": "u002", "order_date": "2024-05-12"},
     )
 

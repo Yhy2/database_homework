@@ -4,6 +4,23 @@ export interface User {
   phone: string;
 }
 
+export interface AuthSession {
+  user: User;
+  token: string;
+}
+
+export interface LoginPayload {
+  user_id: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  user_id: string;
+  user_name: string;
+  phone: string;
+  password: string;
+}
+
 export interface Item {
   item_id: string;
   item_name: string;

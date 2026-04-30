@@ -1,8 +1,8 @@
-INSERT INTO `user` (user_id, user_name, phone) VALUES
-('u001', 'ZhangSan', '13800000001'),
-('u002', 'LiSi', '13800000002'),
-('u003', 'WangWu', '13800000003'),
-('u004', 'ZhaoLiu', '13800000004');
+INSERT INTO `user` (user_id, user_name, phone, password_hash) VALUES
+('u001', 'ZhangSan', '13800000001', 'pbkdf2:sha256:600000$campus-demo-salt$97e3153876af4e7906f32a939d5872ec527e0b78d69dea594facbaeba59079a9'),
+('u002', 'LiSi', '13800000002', 'pbkdf2:sha256:600000$campus-demo-salt$97e3153876af4e7906f32a939d5872ec527e0b78d69dea594facbaeba59079a9'),
+('u003', 'WangWu', '13800000003', 'pbkdf2:sha256:600000$campus-demo-salt$97e3153876af4e7906f32a939d5872ec527e0b78d69dea594facbaeba59079a9'),
+('u004', 'ZhaoLiu', '13800000004', 'pbkdf2:sha256:600000$campus-demo-salt$97e3153876af4e7906f32a939d5872ec527e0b78d69dea594facbaeba59079a9');
 
 INSERT INTO item (item_id, item_name, category, price, status, seller_id) VALUES
 ('i001', 'CalculusBook', 'Book', 20, 0, 'u001'),

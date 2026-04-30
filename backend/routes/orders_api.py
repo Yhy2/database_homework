@@ -4,7 +4,7 @@ from flask import Blueprint
 
 from backend.errors import ValidationError
 from backend.repositories.order_repository import create_purchase, list_orders
-from backend.responses import get_json_body, require_demo_access, success_response
+from backend.responses import get_json_body, require_auth, success_response
 
 orders_api = Blueprint("orders_api", __name__)
 
@@ -15,7 +15,7 @@ def get_orders():
 
 
 @orders_api.post("/api/purchase")
-@require_demo_access
+@require_auth
 def purchase_item():
     payload = get_json_body()
     if not payload.get("item_id"):

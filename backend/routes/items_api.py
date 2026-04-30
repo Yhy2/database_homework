@@ -7,7 +7,7 @@ from backend.repositories.item_repository import (
     list_items,
     update_item_price,
 )
-from backend.responses import get_json_body, require_demo_access, success_response
+from backend.responses import get_json_body, require_auth, success_response
 
 items_api = Blueprint("items_api", __name__)
 
@@ -28,7 +28,7 @@ def get_items():
 
 
 @items_api.post("/api/items")
-@require_demo_access
+@require_auth
 def post_item():
     payload = get_json_body()
     required_fields = ("item_id", "item_name", "category", "price", "seller_id")
@@ -50,7 +50,7 @@ def post_item():
 
 
 @items_api.patch("/api/items/<item_id>/price")
-@require_demo_access
+@require_auth
 def patch_item_price(item_id):
     payload = get_json_body()
     if "price" not in payload:
@@ -60,6 +60,6 @@ def patch_item_price(item_id):
 
 
 @items_api.delete("/api/items/<item_id>")
-@require_demo_access
+@require_auth
 def remove_item(item_id):
     return success_response(delete_item(item_id))

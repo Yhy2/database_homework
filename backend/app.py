@@ -3,6 +3,7 @@ from pymysql import MySQLError
 
 from backend.config import Config
 from backend.errors import ApiError, ServerError
+from backend.routes.auth_api import auth_api
 from backend.routes.health_api import health_api
 from backend.routes.items_api import items_api
 from backend.routes.orders_api import orders_api
@@ -18,6 +19,7 @@ def create_app(config_overrides=None):
         app.config.update(config_overrides)
 
     app.register_blueprint(health_api)
+    app.register_blueprint(auth_api)
     app.register_blueprint(users_api)
     app.register_blueprint(items_api)
     app.register_blueprint(orders_api)

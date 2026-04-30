@@ -140,7 +140,7 @@ onMounted(loadPurchaseData);
     <section class="mode-banner" :class="{ 'mode-banner--active': canWrite }">
       <div>
         <p class="section-kicker">Transaction Access</p>
-        <h3>{{ canWrite ? "商家模式：可执行购买事务" : "游客只读模式" }}</h3>
+        <h3>{{ canWrite ? "账号模式：可执行购买事务" : "游客只读模式" }}</h3>
       </div>
       <p>
         {{

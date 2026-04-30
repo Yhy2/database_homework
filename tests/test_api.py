@@ -25,10 +25,59 @@ def test_seeded_list_endpoints_return_real_data(client):
     assert len(orders_response.get_json()["data"]) == 2
 
 
-def test_item_crud_flow(client, demo_headers):
+def test_auth_register_login_and_demo_flow(client):
+    register_response = client.post(
+        "/api/auth/register",
+        json={
+            "user_id": "u099",
+            "user_name": "ChenQi",
+            "phone": "13900000099",
+            "password": "secret123",
+        },
+    )
+    assert register_response.status_code == 201
+    register_payload = register_response.get_json()["data"]
+    assert register_payload["user"]["user_id"] == "u099"
+    assert register_payload["token"]
+
+    login_response = client.post(
+        "/api/auth/login",
+        json={"user_id": "u099", "password": "secret123"},
+    )
+    assert login_response.status_code == 200
+    token = login_response.get_json()["data"]["token"]
+
+    me_response = client.get(
+        "/api/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert me_response.status_code == 200
+    assert me_response.get_json()["data"]["user_name"] == "ChenQi"
+
+    demo_response = client.post("/api/auth/demo")
+    assert demo_response.status_code == 200
+    assert demo_response.get_json()["data"]["user"]["user_id"] == "u001"
+
+
+def test_write_endpoints_require_login(client):
+    response = client.post(
+        "/api/items",
+        json={
+            "item_id": "i098",
+            "item_name": "Notebook",
+            "category": "Book",
+            "price": 18,
+            "seller_id": "u002",
+        },
+    )
+
+    assert response.status_code == 401
+
+
+def test_item_crud_flow(client, auth_headers):
     create_response = client.post(
         "/api/items",
-        headers=demo_headers,
+        headers=auth_headers,
         json={
             "item_id": "i099",
             "item_name": "Router",
@@ -43,14 +92,14 @@ def test_item_crud_flow(client, demo_headers):
 
     update_response = client.patch(
         "/api/items/i099/price",
-        headers=demo_headers,
+        headers=auth_headers,
         json={"price": 79},
     )
 
     assert update_response.status_code == 200
     assert update_response.get_json()["data"]["price"] == 79
 
-    delete_response = client.delete("/api/items/i099", headers=demo_headers)
+    delete_response = client.delete("/api/items/i099", headers=auth_headers)
     assert delete_response.status_code == 200
 
     items = client.get("/api/items").get_json()["data"]

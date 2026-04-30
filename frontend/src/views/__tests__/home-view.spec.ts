@@ -87,7 +87,7 @@ describe("HomeView", () => {
     expect(wrapper.text()).toContain("查询统计");
     expect(wrapper.text()).toContain("事务购买演示");
     expect(wrapper.text()).toContain("游客只读模式");
-    expect(wrapper.text()).toContain("商家登录上架");
+    expect(wrapper.text()).toContain("登录/注册上架");
     expect(wrapper.text()).not.toContain("系统运行概览");
     expect(wrapper.text()).not.toContain("作业能力覆盖");
   });

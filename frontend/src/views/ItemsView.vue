@@ -70,7 +70,7 @@ async function submitPriceUpdate() {
   }
 
   if (!canWrite.value) {
-    ElMessage.warning("请先登录商家模式");
+    ElMessage.warning("请先登录账号");
     return;
   }
 
@@ -148,7 +148,7 @@ onMounted(loadPageData);
           plain
           @click="openCreateDialog"
         >
-          商家登录后上架
+          登录后上架
         </el-button>
       </template>
 
@@ -182,13 +182,13 @@ onMounted(loadPageData);
     <section class="mode-banner" :class="{ 'mode-banner--active': canWrite }">
       <div>
         <p class="section-kicker">Access Mode</p>
-        <h3>{{ canWrite ? "商家模式：可上架与维护商品" : "游客只读模式" }}</h3>
+        <h3>{{ canWrite ? "账号模式：可上架与维护商品" : "游客只读模式" }}</h3>
       </div>
       <p>
         {{
           canWrite
-            ? "当前写操作会携带演示令牌，可新增商品、改价或删除未售商品。"
-            : "当前只开放数据库读取结果，登录商家模式后才能上架商品。"
+            ? "当前写操作会携带登录凭证，可新增商品、改价或删除未售商品。"
+            : "当前只开放数据库读取结果，登录账号后才能上架商品。"
         }}
       </p>
     </section>

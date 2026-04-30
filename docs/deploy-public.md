@@ -26,8 +26,8 @@
 
 - 不暴露 MySQL `3306` 到公网。
 - 只把 Web 服务暴露到 `APP_PORT`，默认 `80`。
-- 强制要求设置 `MYSQL_ROOT_PASSWORD` 和 `DEMO_ACCESS_TOKEN`。
-- `DEMO_ACCESS_TOKEN` 会同时注入前端构建和后端运行环境；修改后必须重新构建镜像。
+- 强制要求设置 `MYSQL_ROOT_PASSWORD` 和 `SECRET_KEY`。
+- `SECRET_KEY` 只注入后端运行环境，用于签发登录凭证，不会暴露给前端构建。
 
 ## 首次部署步骤
 
@@ -73,13 +73,19 @@ nano .env
 
 ```env
 MYSQL_ROOT_PASSWORD=一个长随机密码
-DEMO_ACCESS_TOKEN=一个长随机令牌
+SECRET_KEY=一个长随机签名密钥
 ```
 
 ### 5. 启动服务
 
 ```bash
 docker compose -f docker-compose.prod.yml up --build -d
+```
+
+如果是已有数据库数据卷升级到注册登录版本，需要执行一次：
+
+```bash
+docker compose -f docker-compose.prod.yml exec db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"' < sql/06_auth_migration.sql
 ```
 
 ### 6. 验证服务
@@ -103,7 +109,7 @@ git pull
 docker compose -f docker-compose.prod.yml up --build -d
 ```
 
-如果只修改了 `.env` 中的 `DEMO_ACCESS_TOKEN`，也要保留 `--build`，否则前端登录页仍会使用旧令牌。
+如果只修改了 `.env` 中的 `SECRET_KEY`，重启后端容器即可；已经签发的登录凭证会失效，需要重新登录。
 
 ## 如果要绑定域名
 

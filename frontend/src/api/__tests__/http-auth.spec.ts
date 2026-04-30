@@ -5,7 +5,7 @@ import {
   logoutMerchant,
   resetAuthSessionForTest,
 } from "../../auth/session";
-import { attachDemoTokenForWrite } from "../http";
+import { attachAuthToken } from "../http";
 
 describe("http write authorization", () => {
   beforeEach(() => {
@@ -13,25 +13,25 @@ describe("http write authorization", () => {
     resetAuthSessionForTest();
   });
 
-  it("does not attach the demo token for visitor write requests", () => {
-    const config = attachDemoTokenForWrite({ method: "POST", headers: {} });
+  it("does not attach authorization for visitor requests", () => {
+    const config = attachAuthToken({ method: "POST", headers: {} });
 
-    expect((config.headers as Record<string, string>)["X-Demo-Token"]).toBeUndefined();
+    expect((config.headers as Record<string, string>).Authorization).toBeUndefined();
   });
 
-  it("attaches the demo token only after merchant login", () => {
+  it("attaches the auth token only after account login", () => {
     loginMerchant({
-      merchantName: "ZhangSan",
-      accessToken: "local-demo-token",
+      user: { user_id: "u001", user_name: "ZhangSan", phone: "13800000001" },
+      token: "signed-token",
     });
 
-    const config = attachDemoTokenForWrite({ method: "PATCH", headers: {} });
+    const config = attachAuthToken({ method: "PATCH", headers: {} });
 
-    expect((config.headers as Record<string, string>)["X-Demo-Token"]).toBe("local-demo-token");
+    expect((config.headers as Record<string, string>).Authorization).toBe("Bearer signed-token");
 
     logoutMerchant();
-    const loggedOutConfig = attachDemoTokenForWrite({ method: "DELETE", headers: {} });
+    const loggedOutConfig = attachAuthToken({ method: "DELETE", headers: {} });
 
-    expect((loggedOutConfig.headers as Record<string, string>)["X-Demo-Token"]).toBeUndefined();
+    expect((loggedOutConfig.headers as Record<string, string>).Authorization).toBeUndefined();
   });
 });

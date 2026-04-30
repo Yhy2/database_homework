@@ -21,6 +21,8 @@ class Config:
             "MYSQL_USER": os.getenv("MYSQL_USER") or os.getenv("MYSQL_ROOT_USER", "root"),
             "MYSQL_PASSWORD": os.getenv("MYSQL_PASSWORD")
             or os.getenv("MYSQL_ROOT_PASSWORD", "root"),
-            "DEMO_ACCESS_TOKEN": os.getenv("DEMO_ACCESS_TOKEN", "local-demo-token"),
+            "AUTH_TOKEN_MAX_AGE_SECONDS": int(
+                os.getenv("AUTH_TOKEN_MAX_AGE_SECONDS", str(60 * 60 * 24 * 7))
+            ),
             "FRONTEND_DIST": str(BASE_DIR / "frontend" / "dist"),
         }

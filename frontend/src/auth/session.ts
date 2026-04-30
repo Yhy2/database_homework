@@ -1,12 +1,8 @@
 import { computed, ref } from "vue";
 
-export interface MerchantSession {
-  merchantName: string;
-  accessToken: string;
-}
+import type { AuthSession } from "../types";
 
-const STORAGE_KEY = "campus-secondhand-merchant-session";
-const DEFAULT_DEMO_TOKEN = "local-demo-token";
+const STORAGE_KEY = "campus-secondhand-auth-session";
 
 function readStoredSession() {
   if (typeof window === "undefined") {
@@ -19,11 +15,15 @@ function readStoredSession() {
   }
 
   try {
-    const parsed = JSON.parse(rawValue) as Partial<MerchantSession>;
-    if (parsed.merchantName && parsed.accessToken) {
+    const parsed = JSON.parse(rawValue) as Partial<AuthSession>;
+    if (parsed.user?.user_id && parsed.user.user_name && parsed.user.phone && parsed.token) {
       return {
-        merchantName: parsed.merchantName,
-        accessToken: parsed.accessToken,
+        user: {
+          user_id: parsed.user.user_id,
+          user_name: parsed.user.user_name,
+          phone: parsed.user.phone,
+        },
+        token: parsed.token,
       };
     }
   } catch {
@@ -33,49 +33,55 @@ function readStoredSession() {
   return null;
 }
 
-const merchantSession = ref<MerchantSession | null>(readStoredSession());
+const authSession = ref<AuthSession | null>(readStoredSession());
 
-export const isMerchantAuthenticated = computed(() => Boolean(merchantSession.value));
-export const activeMerchantName = computed(
-  () => merchantSession.value?.merchantName ?? "游客",
-);
+export const isAuthenticated = computed(() => Boolean(authSession.value));
+export const activeUserName = computed(() => authSession.value?.user.user_name ?? "游客");
+export const activeUserId = computed(() => authSession.value?.user.user_id ?? "");
 
-export function getExpectedDemoAccessToken() {
-  return import.meta.env.VITE_DEMO_ACCESS_TOKEN || DEFAULT_DEMO_TOKEN;
+export const isMerchantAuthenticated = isAuthenticated;
+export const activeMerchantName = activeUserName;
+
+export function getAuthToken() {
+  return authSession.value?.token ?? "";
 }
 
 export function getMerchantAccessToken() {
-  return merchantSession.value?.accessToken ?? "";
+  return getAuthToken();
 }
 
-export function loginMerchant(session: MerchantSession) {
-  merchantSession.value = {
-    merchantName: session.merchantName.trim(),
-    accessToken: session.accessToken,
-  };
+export function saveAuthSession(session: AuthSession) {
+  authSession.value = session;
 
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merchantSession.value));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(authSession.value));
   }
 }
 
-export function logoutMerchant() {
-  merchantSession.value = null;
+export const loginMerchant = saveAuthSession;
+
+export function clearAuthSession() {
+  authSession.value = null;
 
   if (typeof window !== "undefined") {
     window.localStorage.removeItem(STORAGE_KEY);
   }
 }
 
+export const logoutMerchant = clearAuthSession;
+
 export function resetAuthSessionForTest() {
-  logoutMerchant();
+  clearAuthSession();
 }
 
 export function useAuthSession() {
   return {
+    activeUserId,
+    activeUserName,
     activeMerchantName,
+    isAuthenticated,
     isMerchantAuthenticated,
-    loginMerchant,
+    saveAuthSession,
     logoutMerchant,
   };
 }

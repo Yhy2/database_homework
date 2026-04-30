@@ -12,7 +12,6 @@ if str(ROOT) not in sys.path:
 from backend.app import create_app
 
 TEST_DATABASE = os.getenv("MYSQL_TEST_DATABASE", "campus_secondhand_test")
-DEMO_TOKEN = "local-demo-token"
 
 
 def _connect(*, database=None):
@@ -71,7 +70,6 @@ def reset_database():
 @pytest.fixture()
 def app():
     os.environ["MYSQL_DATABASE"] = TEST_DATABASE
-    os.environ["DEMO_ACCESS_TOKEN"] = DEMO_TOKEN
     application = create_app({"TESTING": True})
     yield application
 
@@ -82,8 +80,13 @@ def client(app):
 
 
 @pytest.fixture()
-def demo_headers():
-    return {"X-Demo-Token": DEMO_TOKEN}
+def auth_headers(client):
+    response = client.post(
+        "/api/auth/login",
+        json={"user_id": "u001", "password": "demo123456"},
+    )
+    token = response.get_json()["data"]["token"]
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture()

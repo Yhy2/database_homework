@@ -50,7 +50,7 @@ describe("AppShell", () => {
     expect(wrapper.text()).toContain("查询统计");
     expect(wrapper.text()).toContain("购买演示");
     expect(wrapper.text()).toContain("游客只读模式");
-    expect(wrapper.text()).toContain("商家登录");
+    expect(wrapper.text()).toContain("账号登录");
   });
 
   it("marks the current route inside the global shell", async () => {

@@ -74,7 +74,7 @@ function exitMerchantMode() {
             class="session-pill"
             :class="{ 'session-pill--active': isMerchantAuthenticated }"
           >
-            {{ isMerchantAuthenticated ? `商家：${activeMerchantName}` : "游客只读模式" }}
+            {{ isMerchantAuthenticated ? `账号：${activeMerchantName}` : "游客只读模式" }}
           </span>
           <button
             v-if="isMerchantAuthenticated"
@@ -90,7 +90,7 @@ function exitMerchantMode() {
             type="button"
             @click="openLogin"
           >
-            商家登录
+            账号登录
           </button>
         </div>
       </div>

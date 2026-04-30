@@ -67,7 +67,7 @@ describe("ItemsView", () => {
     expect(wrapper.text()).toContain("商品总数");
     expect(wrapper.text()).toContain("在售库存");
     expect(wrapper.text()).toContain("游客只读模式");
-    expect(wrapper.text()).toContain("商家登录后上架");
+    expect(wrapper.text()).toContain("登录后上架");
     expect(wrapper.text()).not.toContain("新增商品");
   });
 });

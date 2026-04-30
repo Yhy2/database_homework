@@ -5,7 +5,8 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
     user_id VARCHAR(20) PRIMARY KEY,
     user_name VARCHAR(50) NOT NULL,
-    phone VARCHAR(20) NOT NULL UNIQUE
+    phone VARCHAR(20) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE item (

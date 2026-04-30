@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosRequestConfig } from "axios";
 
-import { getMerchantAccessToken } from "../auth/session";
+import { getAuthToken } from "../auth/session";
 
 interface ApiEnvelope<T> {
   code: number;
@@ -24,18 +24,18 @@ const http = axios.create({
   timeout: 10000,
 });
 
-export function attachDemoTokenForWrite(config: AxiosRequestConfig) {
+export function attachAuthToken(config: AxiosRequestConfig) {
   const method = config.method?.toLowerCase();
-  const demoToken = getMerchantAccessToken();
-  if (demoToken && method && ["post", "patch", "delete"].includes(method)) {
+  const authToken = getAuthToken();
+  if (authToken && method && ["get", "post", "patch", "delete"].includes(method)) {
     config.headers = { ...(config.headers ?? {}) };
-    config.headers["X-Demo-Token"] = demoToken;
+    config.headers.Authorization = `Bearer ${authToken}`;
   }
   return config;
 }
 
 http.interceptors.request.use((config) => {
-  return attachDemoTokenForWrite(config);
+  return attachAuthToken(config);
 });
 
 export async function request<T>(config: AxiosRequestConfig) {
