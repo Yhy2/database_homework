@@ -6,7 +6,7 @@
 
 ## 在线访问
 
-- 公网地址：`http://152.136.99.200`
+- 公网地址：`http://campusmarketapply.site`
 - 本地 Docker 默认地址：`http://localhost:8080`
 - 生产 Docker 默认地址：`http://服务器公网IP`
 
