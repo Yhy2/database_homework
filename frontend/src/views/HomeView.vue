@@ -92,7 +92,7 @@ onMounted(loadDashboard);
   <section class="page-section" v-loading="loading">
     <PageHero
       eyebrow="Campus Exchange Platform"
-      title="把数据库作业做成可浏览的校园二手市集"
+      title="校园二手交易平台"
     >
       <template #actions>
         <el-button type="primary" @click="openPage('/items')">浏览商品</el-button>

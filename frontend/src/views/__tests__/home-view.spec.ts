@@ -81,7 +81,7 @@ describe("HomeView", () => {
   it("renders a dashboard-only homepage without explanatory sections", async () => {
     const wrapper = await mountHome();
 
-    expect(wrapper.text()).toContain("把数据库作业做成可浏览的校园二手市集");
+    expect(wrapper.text()).toContain("校园二手交易平台");
     expect(wrapper.text()).toContain("保留原有结构的核心入口");
     expect(wrapper.text()).toContain("商品管理");
     expect(wrapper.text()).toContain("查询统计");
